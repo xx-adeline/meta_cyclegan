@@ -101,7 +101,7 @@ class Visualizer:
             util.save_image(image_numpy, img_path)
 
         # 制成html形式
-        for n in range(out_epoch, 0, -1):
+        for n in range(out_epoch, 0, -self.opt.test_interval_epoch):
             webpage.add_header('epoch [%d]' % n)
             ims, txts, links = [], [], []
 

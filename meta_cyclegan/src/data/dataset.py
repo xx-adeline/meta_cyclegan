@@ -32,7 +32,7 @@ class MetaDatset:
         B_img_path = [os.path.join(self.datapath, task, 'B', img_name) for img_name in B_img_name]
 
         # 以本次抽样数据构建task dataset和dataloader
-        task_dataset = TaskDataset(self.opt, A_img_path, B_img_path)
+        task_dataset = TaskDataset(self.opt, A_img_path, B_img_path, is_train=True)
         dataloader = torch.utils.data.DataLoader(
             task_dataset,
             batch_size=self.opt.batchsize,
@@ -52,7 +52,7 @@ class MetaDatset:
         B_img_name = os.listdir(Bpath)
         B_img_path = [os.path.join(self.datapath, task, 'B', img_name) for img_name in B_img_name]
 
-        tune_dataset = TaskDataset(self.opt, A_img_path, B_img_path)
+        tune_dataset = TaskDataset(self.opt, A_img_path, B_img_path, is_train=True)
         dataloader = torch.utils.data.DataLoader(
             tune_dataset,
             batch_size=self.opt.batchsize,
@@ -72,7 +72,7 @@ class MetaDatset:
         B_img_name = os.listdir(Bpath)
         B_img_path = [os.path.join(self.datapath, task, 'B', img_name) for img_name in B_img_name]
 
-        test_dataset = TaskDataset(self.opt, A_img_path, B_img_path)
+        test_dataset = TaskDataset(self.opt, A_img_path, B_img_path, is_train=False)
         dataloader = torch.utils.data.DataLoader(
             test_dataset,
             batch_size=1,
@@ -83,7 +83,7 @@ class MetaDatset:
 
 
 class TaskDataset(data.Dataset):
-    def __init__(self, opt, A_img_path, B_img_path):
+    def __init__(self, opt, A_img_path, B_img_path, is_train=True):
         """以某一个task的抽样数据构建的dataset"""
         self.opt = opt
 
@@ -94,8 +94,9 @@ class TaskDataset(data.Dataset):
         transform_list.append(transforms.Resize(osize, Image.BICUBIC))
         # crop  256*256
         transform_list.append(transforms.RandomCrop(opt.crop_size))
-        # flip
-        transform_list.append(transforms.RandomHorizontalFlip())
+        # test时不flip
+        if is_train:
+            transform_list.append(transforms.RandomHorizontalFlip())
         # norm
         transform_list += [transforms.ToTensor()]
         transform_list += [transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))]
