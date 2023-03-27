@@ -11,6 +11,9 @@ class options:
         parser.add_argument('--name', default='cyclegan')
         parser.add_argument('--GPU_id', type=str, default='0', help='choose GPU ID [0 1]')
         parser.add_argument('--resume', default='restart')
+        # visualize
+        parser.add_argument('--g_pred', default=True,
+                            help='visualize the predict at the view of generator, which will increase the amount of computation')
         # datasets
         parser.add_argument('--dataroot', default='../../datasets')
         parser.add_argument('--datasets', default='juanben_task')
@@ -28,7 +31,7 @@ class options:
         parser.add_argument('--lambda_A', type=float, default=10.0, help='weight for cycle loss (A -> B -> A)')
         parser.add_argument('--lambda_B', type=float, default=10.0, help='weight for cycle loss (B -> A -> B)')
         # test
-        parser.add_argument('--test_index', type=int, default=0, help="test which data")
+        parser.add_argument('--test_index', type=int, default=0, help='which to choose as test data')
         # model
         parser.add_argument('--ngf', type=int, default=64, help='# of gen filters in the last conv layer')
         parser.add_argument('--ndf', type=int, default=64, help='# of discrim filters in the first conv layer')

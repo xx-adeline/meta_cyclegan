@@ -47,9 +47,6 @@ class TraninDatasets(data.Dataset):
             self.A_path_list += [os.path.join(Apath, img_name) for img_name in A_img_name]
             self.B_path_list += [os.path.join(Bpath, img_name) for img_name in B_img_name]
 
-            # 按目标域标注task的label
-            self.label_list += [i for j in range(len(B_img_name))]
-
         self.A_size = len(self.A_path_list)
         self.B_size = len(self.B_path_list)
 
@@ -71,7 +68,7 @@ class TraninDatasets(data.Dataset):
         return A_img, B_img
 
     def __len__(self):
-        return len(self.label_list)
+        return max(self.A_size, self.B_size)
 
 
 class TestDatasets(data.Dataset):
@@ -109,10 +106,12 @@ class TestDatasets(data.Dataset):
         B_img_name = os.listdir(Bpath)
         self.A_path_list += [os.path.join(Apath, img_name) for img_name in A_img_name]
         self.B_path_list += [os.path.join(Bpath, img_name) for img_name in B_img_name]
+        self.A_size = len(self.A_path_list)
+        self.B_size = len(self.B_path_list)
         
     def __getitem__(self, index):
         A_img = self.A_path_list[index]
-        B_img = self.B_path_list[index]
+        B_img = self.B_path_list[index % self.B_size]
         A_img = Image.open(A_img).convert('RGB')
         B_img = Image.open(B_img).convert('RGB')
         A_img = self.tran(A_img)
@@ -121,7 +120,7 @@ class TestDatasets(data.Dataset):
         return A_img, B_img
 
     def __len__(self):
-        return len(self.B_path_list)
+        return max(self.A_size, self.B_size)
 
 
 

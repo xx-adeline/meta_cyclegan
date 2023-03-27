@@ -48,21 +48,25 @@ def train(opt):
                 visualizer.print_current_losses(epoch, times, lA, lB)
                 visualizer.plot_line(epoch, (float(times) * opt.batchsize) / train_data_len, lA, "lossA")
                 visualizer.plot_line(epoch, (float(times) * opt.batchsize) / train_data_len, lB, "lossB")
-                pA, pB = model.get_current_pred()
-                visualizer.plot_line(epoch, (float(times) * opt.batchsize) / train_data_len, pA, "predA")
-                visualizer.plot_line(epoch, (float(times) * opt.batchsize) / train_data_len, pB, "predB")
+                # 可视化predict
+                visualizer.plot_line(epoch, (float(times) * opt.batchsize) / train_data_len, model.G_pA_ret, 'G_predA')
+                visualizer.plot_line(epoch, (float(times) * opt.batchsize) / train_data_len, model.G_pB_ret, 'G_predB')
+                visualizer.plot_line(epoch, (float(times) * opt.batchsize) / train_data_len, model.D_pA_ret, 'D_predA')
+                visualizer.plot_line(epoch, (float(times) * opt.batchsize) / train_data_len, model.D_pB_ret, 'D_predB')
 
         test_A_img, test_B_img = test_dataset[opt.test_index]
         test_A_img = test_A_img.to(opt.device).unsqueeze(0)
         test_B_img = test_B_img.to(opt.device).unsqueeze(0)
+        model.eval()
         with torch.no_grad():
             model.forward(test_A_img, test_B_img)
+        model.train()
         visualizer.save_images(model.get_current_visuals(), epoch)
 
         # 保存模型参数
         if epoch > 150:
             state = {'generatorA': model.netG_A.state_dict(),
-                     'generatorB': model.netG_B.state_dict(),
+                     # 'generatorB': model.netG_B.state_dict(),
                      # 'discriminatorA': model.netD_A.state_dict(),
                      # 'discriminatorB': model.netD_B.state_dict(),
                      'epoch': epoch

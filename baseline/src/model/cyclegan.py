@@ -53,6 +53,8 @@ class Cyclegan(nn.Module):
         # 计算G的loss
         self.backward_G()
         self.optimizer_G.step()
+        # 暂存可视化G_pred的数据
+        self.G_pA_ret, self.G_pB_ret = self.get_current_pred()
         # 打开D的梯度      fake_image.detach()不会回传梯度到G
         self.set_requires_grad([self.netD_A, self.netD_B], True)
         self.optimizer_D.zero_grad()
@@ -60,6 +62,8 @@ class Cyclegan(nn.Module):
         self.backward_D_A()
         self.backward_D_B()
         self.optimizer_D.step()
+        # 暂存可视化D_pred的数据
+        self.D_pA_ret, self.D_pB_ret = self.get_current_pred()
 
     def backward_D_A(self):
         fake_B = self.fake_B_pool.query(self.fake_B)
@@ -88,11 +92,17 @@ class Cyclegan(nn.Module):
     def backward_G(self):
         lambda_A = self.opt.lambda_A
         lambda_B = self.opt.lambda_B
-
+        # 以生成器视角的可视化
+        self.pred_A_fake = self.netD_A(self.fake_B)
+        self.pred_B_fake = self.netD_B(self.fake_A)
+        if self.opt.g_pred:
+            with torch.no_grad():
+                self.pred_A_real = self.netD_A(self.real_B)
+                self.pred_B_real = self.netD_B(self.real_A)
         # GAN loss D_A(G_A(A))
-        self.loss_G_A = self.criterionGAN(self.netD_A(self.fake_B), True)
+        self.loss_G_A = self.criterionGAN(self.pred_A_fake, True)
         # GAN loss D_B(G_B(B))
-        self.loss_G_B = self.criterionGAN(self.netD_B(self.fake_A), True)
+        self.loss_G_B = self.criterionGAN(self.pred_B_fake, True)
         # 循环一致loss || G_B(G_A(A)) - A||
         self.loss_cycle_A = self.criterionCycle(self.rec_A, self.real_A) * lambda_A
         # 循环一致loss || G_A(G_B(B)) - B||
